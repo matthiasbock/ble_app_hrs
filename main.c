@@ -57,8 +57,8 @@
 #define HR_DEC_BUTTON_PIN_NO                 BUTTON_1                                   /**< Button used to decrement heart rate. */
 #define BOND_DELETE_ALL_BUTTON_ID            HR_DEC_BUTTON_PIN_NO                       /**< Button used for deleting all bonded centrals during startup. */
 
-#define DEVICE_NAME                          "Nordic_HRM"                               /**< Name of device. Will be included in the advertising data. */
-#define MANUFACTURER_NAME                    "NordicSemiconductor"                      /**< Manufacturer. Will be passed to Device Information Service. */
+#define DEVICE_NAME                          "nRFduino"                               /**< Name of device. Will be included in the advertising data. */
+#define MANUFACTURER_NAME                    "Interoberlin"                      /**< Manufacturer. Will be passed to Device Information Service. */
 #define APP_ADV_INTERVAL                     40                                         /**< The advertising interval (in units of 0.625 ms. This value corresponds to 25 ms). */
 #define APP_ADV_TIMEOUT_IN_SECONDS           180                                        /**< The advertising timeout in units of seconds. */
 
@@ -331,9 +331,12 @@ static void advertising_init(void)
 
     ble_uuid_t adv_uuids[] =
     {
+            /*
         {BLE_UUID_HEART_RATE_SERVICE,         BLE_UUID_TYPE_BLE},
         {BLE_UUID_BATTERY_SERVICE,            BLE_UUID_TYPE_BLE},
         {BLE_UUID_DEVICE_INFORMATION_SERVICE, BLE_UUID_TYPE_BLE}
+        */
+            {0x3000, BLE_UUID_TYPE_BLE}
     };
 
     // Build and set advertising data.
@@ -562,8 +565,8 @@ static void application_timers_start(void)
     err_code = app_timer_start(m_battery_timer_id, BATTERY_LEVEL_MEAS_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
 
-    err_code = app_timer_start(m_heart_rate_timer_id, HEART_RATE_MEAS_INTERVAL, NULL);
-    APP_ERROR_CHECK(err_code);
+    //err_code = app_timer_start(m_heart_rate_timer_id, HEART_RATE_MEAS_INTERVAL, NULL);
+    //APP_ERROR_CHECK(err_code);
 }
 
 
@@ -639,7 +642,8 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
 
             // Go to system-off mode, should not return from this function, wakeup will trigger
             // a reset.
-            system_off_mode_enter();
+            //system_off_mode_enter();
+            NVIC_SystemReset();
             break;
 
         case BLE_GAP_EVT_TIMEOUT:
