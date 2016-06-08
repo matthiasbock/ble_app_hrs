@@ -48,6 +48,9 @@
 #include <stdbool.h>
 #include "ble.h"
 #include "ble_srv_common.h"
+#include "nrf_gpio.h"
+
+#define NRFDUINO_LED_PIN                        28
 
 // Body Sensor Location values
 #define BLE_HRS_BODY_SENSOR_LOCATION_OTHER      0

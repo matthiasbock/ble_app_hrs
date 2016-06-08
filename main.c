@@ -49,7 +49,7 @@
 #include "app_trace.h"
 
 
-
+#define NRFDUINO_LED_PIN                     28
 
 #define IS_SRVC_CHANGED_CHARACT_PRESENT      0                                          /**< Include or not the service_changed characteristic. if not enabled, the server's database cannot be changed for the lifetime of the device*/
                                                                              
@@ -642,8 +642,8 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
 
             // Go to system-off mode, should not return from this function, wakeup will trigger
             // a reset.
-            //system_off_mode_enter();
-            NVIC_SystemReset();
+            system_off_mode_enter();
+            //NVIC_SystemReset();
             break;
 
         case BLE_GAP_EVT_TIMEOUT:
@@ -732,6 +732,9 @@ static void sys_evt_dispatch(uint32_t sys_evt)
  */
 int main(void)
 {
+    nrf_gpio_pin_dir_set(NRFDUINO_LED_PIN, NRF_GPIO_PORT_DIR_OUTPUT);
+    nrf_gpio_pin_clear(NRFDUINO_LED_PIN);
+
     uint32_t err_code;
 
     timers_init();
