@@ -32,7 +32,7 @@
 #include "ble_srv_common.h"
 #include "ble_advdata.h"
 #include "ble_bas.h"
-#include "ble_hrs.h"
+#include "hrs.h"
 #include "ble_dis.h"
 #include "ble_conn_params.h"
 #include "boards.h"
