@@ -331,12 +331,10 @@ static void advertising_init(void)
 
     ble_uuid_t adv_uuids[] =
     {
-            /*
         {BLE_UUID_HEART_RATE_SERVICE,         BLE_UUID_TYPE_BLE},
         {BLE_UUID_BATTERY_SERVICE,            BLE_UUID_TYPE_BLE},
         {BLE_UUID_DEVICE_INFORMATION_SERVICE, BLE_UUID_TYPE_BLE}
-        */
-            {0x3000, BLE_UUID_TYPE_BLE}
+//            {0x3000, BLE_UUID_TYPE_BLE}
     };
 
     // Build and set advertising data.
@@ -362,6 +360,10 @@ static void advertising_init(void)
     m_adv_params.timeout     = APP_ADV_TIMEOUT_IN_SECONDS;
 }
 
+void my_hrs_handler(ble_hrs_t * p_hrs, ble_hrs_evt_t * p_evt)
+{
+    nrf_gpio_pin_toggle(NRFDUINO_LED_PIN);
+}
 
 /**@brief Function for initializing the services that will be used by the application.
  *
@@ -380,6 +382,7 @@ static void services_init(void)
 
     memset(&hrs_init, 0, sizeof(hrs_init));
 
+    hrs_init.evt_handler                 = &my_hrs_handler;
     hrs_init.is_sensor_contact_supported = false;
     hrs_init.p_body_sensor_location      = &body_sensor_location;
 
@@ -642,8 +645,11 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
 
             // Go to system-off mode, should not return from this function, wakeup will trigger
             // a reset.
-            system_off_mode_enter();
-            //NVIC_SystemReset();
+            //system_off_mode_enter();
+
+            // Der Reset ist erforderlich, da die Barke sonst nach einer Verbindung unereichbar bleibt.
+            // Da scheint es irgendwie eine Unzulaenglichkeit zu geben bei der Rueckkehr zum Advertising-Modus...
+            NVIC_SystemReset();
             break;
 
         case BLE_GAP_EVT_TIMEOUT:

@@ -46,7 +46,7 @@ static void on_connect(ble_hrs_t * p_hrs, ble_evt_t * p_ble_evt)
 {
     p_hrs->conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
 
-    nrf_gpio_pin_set(NRFDUINO_LED_PIN);
+    //nrf_gpio_pin_set(NRFDUINO_LED_PIN);
 }
 
 
@@ -105,7 +105,7 @@ static void on_write(ble_hrs_t * p_hrs, ble_evt_t * p_ble_evt)
         on_hrm_cccd_write(p_hrs, p_evt_write);
     }
 
-    nrf_gpio_pin_set(NRFDUINO_LED_PIN);
+    //nrf_gpio_pin_set(NRFDUINO_LED_PIN);
 }
 
 
