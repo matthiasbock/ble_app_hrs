@@ -39,6 +39,7 @@
 #include "softdevice_handler.h"
 #include "app_timer.h"
 #include "nrf_gpio.h"
+//#include "nrf_delay.h"
 #include "led.h"
 #include "battery.h"
 #include "device_manager.h"
@@ -137,6 +138,9 @@ void app_error_handler(uint32_t error_code, uint32_t line_num, const uint8_t * p
     //                Use with care. Un-comment the line below to use.
     // ble_debug_assert_handler(error_code, line_num, p_file_name);
 
+    printf("System error %x in file %d, line %d\n", (int) error_code, (int) *p_file_name, (int) line_num);
+
+    //nrf_delay_ms(2);
     // On assert, the system can only recover with a reset.
     NVIC_SystemReset();
 }
@@ -474,6 +478,8 @@ static void device_manager_init(void)
     dm_init_param_t         init_data;
     dm_application_param_t  register_param;
     
+    printf("Initializing device manager ...\n");
+
     // Initialize persistent storage module.
     err_code = pstorage_init();
     APP_ERROR_CHECK(err_code);
@@ -508,6 +514,8 @@ static void device_manager_init(void)
 static void ble_stack_init(void)
 {
     uint32_t err_code;
+
+    printf("Initializing BLE stack ...\n");
     
     // Initialize the SoftDevice handler module.
     SOFTDEVICE_HANDLER_INIT(NRF_CLOCK_LFCLKSRC_XTAL_20_PPM, false);
@@ -579,6 +587,8 @@ static void advertising_start(void)
 {
     uint32_t err_code;
 
+    printf("Start advertising ...\n");
+
     err_code = sd_ble_gap_adv_start(&m_adv_params);
     APP_ERROR_CHECK(err_code);
 
@@ -592,7 +602,9 @@ static void system_off_mode_enter(void)
 {
     uint32_t err_code;
     uint32_t count;
-    
+
+    printf("Entering system off mode...\n");
+
     // Verify if there is any flash access pending, if yes delay starting advertising until 
     // it's complete.
     err_code = pstorage_access_status_get(&count);
@@ -639,6 +651,7 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             break;
 
         case BLE_GAP_EVT_DISCONNECTED:            
+            printf("disconnected\n");
             // @note Flash access may not be complete on return of this API. System attributes are now
             // stored to flash when they are updated to ensure flash access on disconnect does not
             // result in system powering off before data was successfully written.
@@ -646,10 +659,11 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             // Go to system-off mode, should not return from this function, wakeup will trigger
             // a reset.
             //system_off_mode_enter();
+            advertising_start();
 
             // Der Reset ist erforderlich, da die Barke sonst nach einer Verbindung unereichbar bleibt.
             // Da scheint es irgendwie eine Unzulaenglichkeit zu geben bei der Rueckkehr zum Advertising-Modus...
-            NVIC_SystemReset();
+            //NVIC_SystemReset();
             break;
 
         case BLE_GAP_EVT_TIMEOUT:
@@ -667,9 +681,11 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
 
                 system_off_mode_enter();
             }
+            printf("GAP timeout\n");
             break;
 
         default:
+            //printf("unhandled: %d (=0x%x)\n", p_ble_evt->header.evt_id, p_ble_evt->header.evt_id);
             // No implementation needed.
             break;
     }
@@ -738,6 +754,8 @@ static void sys_evt_dispatch(uint32_t sys_evt)
  */
 int main(void)
 {
+    printf("Hello world!\n");
+
     nrf_gpio_pin_dir_set(NRFDUINO_LED_PIN, NRF_GPIO_PORT_DIR_OUTPUT);
     nrf_gpio_pin_clear(NRFDUINO_LED_PIN);
 
