@@ -17,6 +17,7 @@
 
 #include "hrs.h"
 #include <string.h>
+#include <stdio.h>
 #include "nordic_common.h"
 #include "ble_l2cap.h"
 #include "ble_srv_common.h"
@@ -104,8 +105,6 @@ static void on_write(ble_hrs_t * p_hrs, ble_evt_t * p_ble_evt)
     {
         on_hrm_cccd_write(p_hrs, p_evt_write);
     }
-
-    //nrf_gpio_pin_set(NRFDUINO_LED_PIN);
 }
 
 
@@ -122,9 +121,19 @@ void ble_hrs_on_ble_evt(ble_hrs_t * p_hrs, ble_evt_t * p_ble_evt)
             break;
 
         case BLE_GATTS_EVT_WRITE:
+//            printf("event\n");
             on_write(p_hrs, p_ble_evt);
             break;
 
+        case BLE_GATTS_EVT_RW_AUTHORIZE_REQUEST:
+//            printf("authorize\n");
+            break;
+/*
+        case BLE_GATTS_EVT_SYS_ATTR_MISSING,
+            BLE_GATTS_EVT_HVC,
+            BLE_GATTS_EVT_SC_CONFIRM,
+            BLE_GATTS_EVT_TIMEOUT
+*/
         default:
             // No implementation needed.
             break;
@@ -241,9 +250,9 @@ static uint32_t heart_rate_measurement_char_add(ble_hrs_t            * p_hrs,
 
     attr_char_value.p_uuid    = &ble_uuid;
     attr_char_value.p_attr_md = &attr_md;
-    attr_char_value.init_len  = hrm_encode(p_hrs, INITIAL_VALUE_HRM, encoded_initial_hrm);
+    attr_char_value.init_len  = 1; //hrm_encode(p_hrs, INITIAL_VALUE_HRM, encoded_initial_hrm);
     attr_char_value.init_offs = 0;
-    attr_char_value.max_len   = MAX_HRM_LEN;
+    attr_char_value.max_len   = 1; //MAX_HRM_LEN;
     attr_char_value.p_value   = encoded_initial_hrm;
 
     return sd_ble_gatts_characteristic_add(p_hrs->service_handle,
@@ -276,7 +285,7 @@ static uint32_t body_sensor_location_char_add(ble_hrs_t * p_hrs, const ble_hrs_i
     char_md.p_cccd_md        = NULL;
     char_md.p_sccd_md        = NULL;
 
-    BLE_UUID_BLE_ASSIGN(ble_uuid, BLE_UUID_BODY_SENSOR_LOCATION_CHAR);
+    BLE_UUID_BLE_ASSIGN(ble_uuid, 0x2013); //BLE_UUID_BODY_SENSOR_LOCATION_CHAR);
 
     memset(&attr_md, 0, sizeof(attr_md));
 
@@ -316,7 +325,7 @@ uint32_t ble_hrs_init(ble_hrs_t * p_hrs, const ble_hrs_init_t * p_hrs_init)
     p_hrs->rr_interval_count           = 0;
 
     // Add service
-    BLE_UUID_BLE_ASSIGN(ble_uuid, BLE_UUID_HEART_RATE_SERVICE);
+    BLE_UUID_BLE_ASSIGN(ble_uuid, 0x2002); //BLE_UUID_HEART_RATE_SERVICE);
 
     err_code = sd_ble_gatts_service_add(BLE_GATTS_SRVC_TYPE_PRIMARY,
                                         &ble_uuid,
