@@ -39,7 +39,7 @@
 #include "softdevice_handler.h"
 #include "app_timer.h"
 #include "nrf_gpio.h"
-//#include "nrf_delay.h"
+#include "nrf_delay.h"
 #include "led.h"
 #include "battery.h"
 #include "device_manager.h"
@@ -142,6 +142,7 @@ void app_error_handler(uint32_t error_code, uint32_t line_num, const uint8_t * p
 
     //nrf_delay_ms(2);
     // On assert, the system can only recover with a reset.
+    printf("NVIC_SystemReset();\n");
     NVIC_SystemReset();
 }
 
@@ -392,11 +393,10 @@ static void services_init(void)
 
     // Here the sec level for the Heart Rate Service can be changed/increased.
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&hrs_init.hrs_hrm_attr_md.cccd_write_perm);
-    BLE_GAP_CONN_SEC_MODE_SET_NO_ACCESS(&hrs_init.hrs_hrm_attr_md.read_perm);
-    BLE_GAP_CONN_SEC_MODE_SET_NO_ACCESS(&hrs_init.hrs_hrm_attr_md.write_perm);
-
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&hrs_init.hrs_hrm_attr_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&hrs_init.hrs_hrm_attr_md.write_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&hrs_init.hrs_bsl_attr_md.read_perm);
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&hrs_init.hrs_bsl_attr_md.write_perm);
-    BLE_GAP_CONN_SEC_MODE_SET_NO_ACCESS(&hrs_init.hrs_bsl_attr_md.read_perm);
 
     err_code = ble_hrs_init(&m_hrs, &hrs_init);
     APP_ERROR_CHECK(err_code);
@@ -407,7 +407,7 @@ static void services_init(void)
     // Here the sec level for the Battery Service can be changed/increased.
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&bas_init.battery_level_char_attr_md.cccd_write_perm);
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&bas_init.battery_level_char_attr_md.read_perm);
-    BLE_GAP_CONN_SEC_MODE_SET_NO_ACCESS(&bas_init.battery_level_char_attr_md.write_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&bas_init.battery_level_char_attr_md.write_perm);
 
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&bas_init.battery_level_report_read_perm);
 
@@ -425,7 +425,7 @@ static void services_init(void)
     ble_srv_ascii_to_utf8(&dis_init.manufact_name_str, MANUFACTURER_NAME);
 
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&dis_init.dis_attr_md.read_perm);
-    BLE_GAP_CONN_SEC_MODE_SET_NO_ACCESS(&dis_init.dis_attr_md.write_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&dis_init.dis_attr_md.write_perm);
 
     err_code = ble_dis_init(&dis_init);
     APP_ERROR_CHECK(err_code);
@@ -491,7 +491,7 @@ static void device_manager_init(void)
     APP_ERROR_CHECK(err_code);
 
     memset(&register_param.sec_param, 0, sizeof(ble_gap_sec_params_t));
-    
+
     register_param.sec_param.timeout      = SEC_PARAM_TIMEOUT;
     register_param.sec_param.bond         = SEC_PARAM_BOND;
     register_param.sec_param.mitm         = SEC_PARAM_MITM;
@@ -714,6 +714,14 @@ static void on_sys_evt(uint32_t sys_evt)
     }
 }
 
+void blink()
+{
+    //nrf_gpio_pin_toggle(NRFDUINO_LED_PIN);
+    nrf_gpio_pin_set(NRFDUINO_LED_PIN);
+    nrf_delay_ms(20);
+    nrf_gpio_pin_clear(NRFDUINO_LED_PIN);
+    nrf_delay_ms(50);
+}
 
 /**@brief Function for dispatching a BLE stack event to all modules with a BLE stack event handler.
  *
@@ -724,6 +732,64 @@ static void on_sys_evt(uint32_t sys_evt)
  */
 static void ble_evt_dispatch(ble_evt_t * p_ble_evt)
 {
+    switch (p_ble_evt->header.evt_id)
+    {
+        case 0x10:
+            // connected
+            break;
+
+        case 0x11:
+            // disconnected
+            break;
+
+        case 0x12:
+            // Connection Parameters Update
+            blink();
+            break;
+
+        case 0x13:
+            // Security Parameters Request
+            blink();
+            blink();
+            break;
+
+        case 0x14:
+            // Security Info Request
+            blink();
+            blink();
+            blink();
+            break;
+
+        case 0x17:
+            // Authentication Status event
+            blink();
+            blink();
+            blink();
+            blink();
+            break;
+
+        case 0x18:
+            // Connection Security Update
+            blink();
+            blink();
+            blink();
+            blink();
+            blink();
+            break;
+
+        case 0x19:
+            printf("GAP timeout. System restarting...\n");
+            NVIC_SystemReset();
+            break;
+
+        case 0x50:
+            // Write
+            break;
+
+        default:
+            printf("Unrecognized event 0x%x\n", p_ble_evt->header.evt_id);
+    }
+
     dm_ble_evt_handler(p_ble_evt);
     ble_hrs_on_ble_evt(&m_hrs, p_ble_evt);
     ble_bas_on_ble_evt(&bas, p_ble_evt);
@@ -754,10 +820,15 @@ static void sys_evt_dispatch(uint32_t sys_evt)
  */
 int main(void)
 {
-    printf("Hello world!\n");
+    printf("Hello Toggler!\n");
 
     nrf_gpio_pin_dir_set(NRFDUINO_LED_PIN, NRF_GPIO_PORT_DIR_OUTPUT);
-    nrf_gpio_pin_clear(NRFDUINO_LED_PIN);
+    nrf_gpio_pin_toggle(NRFDUINO_LED_PIN);
+    nrf_delay_ms(1000);
+    nrf_gpio_pin_toggle(NRFDUINO_LED_PIN);
+    nrf_delay_ms(1000);
+
+    blink();
 
     uint32_t err_code;
 

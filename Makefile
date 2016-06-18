@@ -25,6 +25,7 @@ C_SOURCE_FILES += app_trace.c
 C_SOURCE_FILES += simple_uart.c
 C_SOURCE_FILES += app_gpiote.c
 C_SOURCE_FILES += app_button.c
+C_SOURCE_FILES += nrf_delay.c
 
 SDK_PATH = ../../../../
 

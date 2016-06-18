@@ -113,28 +113,42 @@ void ble_hrs_on_ble_evt(ble_hrs_t * p_hrs, ble_evt_t * p_ble_evt)
     switch (p_ble_evt->header.evt_id)
     {
         case BLE_GAP_EVT_CONNECTED:
+//            printf("connected\n");  // appears with System error deadbeef in file 115, line 1377
             on_connect(p_hrs, p_ble_evt);
             break;
 
         case BLE_GAP_EVT_DISCONNECTED:
+            //printf("disconnected\n");
             on_disconnect(p_hrs, p_ble_evt);
             break;
 
         case BLE_GATTS_EVT_WRITE:
-//            printf("event\n");
+            //printf("write received\n");
             on_write(p_hrs, p_ble_evt);
             break;
 
         case BLE_GATTS_EVT_RW_AUTHORIZE_REQUEST:
-//            printf("authorize\n");
+            //printf("authorization requets\n");
             break;
-/*
-        case BLE_GATTS_EVT_SYS_ATTR_MISSING,
-            BLE_GATTS_EVT_HVC,
-            BLE_GATTS_EVT_SC_CONFIRM,
-            BLE_GATTS_EVT_TIMEOUT
-*/
+
+        case BLE_GATTS_EVT_SYS_ATTR_MISSING:
+            //printf("system attribute missing\n");
+            break;
+
+        case BLE_GATTS_EVT_HVC:
+            //printf("handle value confirmation event\n");
+            break;
+
+        case BLE_GATTS_EVT_SC_CONFIRM:
+            //printf("service changed\n");
+            break;
+
+        case BLE_GATTS_EVT_TIMEOUT:
+            printf("timeout\n");
+            break;
+
         default:
+            //printf("unhandled event\n");
             // No implementation needed.
             break;
     }
@@ -202,6 +216,26 @@ static uint8_t hrm_encode(ble_hrs_t * p_hrs, uint16_t heart_rate, uint8_t * p_en
     return len;
 }
 
+void debug_characteristic_add(int uuid, ble_gatts_char_md_t* char_md)
+{
+    printf("added characteristic with UUID 0x%04x\n", uuid);
+    printf("characteristic properties: ");
+    if (char_md->char_props.broadcast)
+        printf("broadcast ");
+    if (char_md->char_props.read)
+        printf("read ");
+    if (char_md->char_props.write_wo_resp)
+        printf("write_without_response ");
+    if (char_md->char_props.write)
+        printf("write ");
+    if (char_md->char_props.notify)
+        printf("notify ");
+    if (char_md->char_props.indicate)
+        printf("indicate ");
+    if (char_md->char_props.auth_signed_wr)
+        printf("signed_write ");
+    printf("\n");
+}
 
 /**@brief Function for adding the Heart Rate Measurement characteristic.
  *
@@ -223,19 +257,23 @@ static uint32_t heart_rate_measurement_char_add(ble_hrs_t            * p_hrs,
     memset(&cccd_md, 0, sizeof(cccd_md));
 
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.read_perm);
-    cccd_md.write_perm = p_hrs_init->hrs_hrm_attr_md.cccd_write_perm;
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.write_perm);
+    //cccd_md.write_perm = //p_hrs_init->hrs_hrm_attr_md.cccd_write_perm;
     cccd_md.vloc       = BLE_GATTS_VLOC_STACK;
 
     memset(&char_md, 0, sizeof(char_md));
 
     char_md.char_props.notify = 1;
+//    char_md.char_props.write   = 1;
     char_md.p_char_user_desc  = NULL;
     char_md.p_char_pf         = NULL;
     char_md.p_user_desc_md    = NULL;
     char_md.p_cccd_md         = &cccd_md;
     char_md.p_sccd_md         = NULL;
 
-    BLE_UUID_BLE_ASSIGN(ble_uuid, BLE_UUID_HEART_RATE_MEASUREMENT_CHAR);
+    int uuid = 0x2013;
+    BLE_UUID_BLE_ASSIGN(ble_uuid, uuid); //BLE_UUID_HEART_RATE_MEASUREMENT_CHAR);
+    debug_characteristic_add(uuid, &char_md);
 
     memset(&attr_md, 0, sizeof(attr_md));
 
@@ -278,14 +316,17 @@ static uint32_t body_sensor_location_char_add(ble_hrs_t * p_hrs, const ble_hrs_i
 
     memset(&char_md, 0, sizeof(char_md));
 
-    char_md.char_props.read  = 1;
+    char_md.char_props.notify = 1;
+//    char_md.char_props.write = 1;
     char_md.p_char_user_desc = NULL;
     char_md.p_char_pf        = NULL;
     char_md.p_user_desc_md   = NULL;
     char_md.p_cccd_md        = NULL;
     char_md.p_sccd_md        = NULL;
 
-    BLE_UUID_BLE_ASSIGN(ble_uuid, 0x2013); //BLE_UUID_BODY_SENSOR_LOCATION_CHAR);
+    int uuid = 0x9876;
+    BLE_UUID_BLE_ASSIGN(ble_uuid, uuid); //BLE_UUID_BODY_SENSOR_LOCATION_CHAR);
+    debug_characteristic_add(uuid, &char_md);
 
     memset(&attr_md, 0, sizeof(attr_md));
 
