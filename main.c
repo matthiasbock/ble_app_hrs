@@ -60,7 +60,7 @@
 #define DEVICE_NAME                          "nRFduino"                               /**< Name of device. Will be included in the advertising data. */
 #define MANUFACTURER_NAME                    "Interoberlin"                      /**< Manufacturer. Will be passed to Device Information Service. */
 #define APP_ADV_INTERVAL                     40                                         /**< The advertising interval (in units of 0.625 ms. This value corresponds to 25 ms). */
-#define APP_ADV_TIMEOUT_IN_SECONDS           180                                        /**< The advertising timeout in units of seconds. */
+#define APP_ADV_TIMEOUT_IN_SECONDS           360                                        /**< The advertising timeout in units of seconds. */
 
 #define APP_TIMER_PRESCALER                  0                                          /**< Value of the RTC1 PRESCALER register. */
 #define APP_TIMER_MAX_TIMERS                 5                                          /**< Maximum number of simultaneously created timers. */
@@ -136,6 +136,8 @@ void app_error_handler(uint32_t error_code, uint32_t line_num, const uint8_t * p
     //                any communication.
     //                Use with care. Un-comment the line below to use.
     // ble_debug_assert_handler(error_code, line_num, p_file_name);
+
+    printf("System error 0x%8x\n", (unsigned int) error_code);
 
     // On assert, the system can only recover with a reset.
     NVIC_SystemReset();
@@ -634,8 +636,8 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             application_timers_start();
 
             // Start handling button presses
-            err_code = app_button_enable();
-            APP_ERROR_CHECK(err_code);
+            //err_code = app_button_enable();
+            //APP_ERROR_CHECK(err_code);
             break;
 
         case BLE_GAP_EVT_DISCONNECTED:            
@@ -646,13 +648,16 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             // Go to system-off mode, should not return from this function, wakeup will trigger
             // a reset.
             //system_off_mode_enter();
+            advertising_start();
 
             // Der Reset ist erforderlich, da die Barke sonst nach einer Verbindung unereichbar bleibt.
             // Da scheint es irgendwie eine Unzulaenglichkeit zu geben bei der Rueckkehr zum Advertising-Modus...
-            NVIC_SystemReset();
+            //NVIC_SystemReset();
             break;
 
         case BLE_GAP_EVT_TIMEOUT:
+            advertising_start();
+/*
             if (p_ble_evt->evt.gap_evt.params.timeout.src == BLE_GAP_TIMEOUT_SRC_ADVERTISEMENT)
             {
                 led_stop();
@@ -667,6 +672,7 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
 
                 system_off_mode_enter();
             }
+            */
             break;
 
         default:
