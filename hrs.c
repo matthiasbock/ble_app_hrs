@@ -226,7 +226,7 @@ static uint32_t heart_rate_measurement_char_add(ble_hrs_t            * p_hrs,
     char_md.p_cccd_md         = &cccd_md;
     char_md.p_sccd_md         = NULL;
 
-    BLE_UUID_BLE_ASSIGN(ble_uuid, BLE_UUID_HEART_RATE_MEASUREMENT_CHAR);
+    BLE_UUID_BLE_ASSIGN(ble_uuid, 0x2013);//BLE_UUID_HEART_RATE_MEASUREMENT_CHAR);
 
     memset(&attr_md, 0, sizeof(attr_md));
 
