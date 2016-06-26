@@ -67,7 +67,7 @@ void ADC_IRQHandler(void)
 
         batt_lvl_in_milli_volts = ADC_RESULT_IN_MILLI_VOLTS(adc_result) +
                                   DIODE_FWD_VOLT_DROP_MILLIVOLTS;
-        percentage_batt_lvl     = battery_level_in_percent(batt_lvl_in_milli_volts);
+        percentage_batt_lvl     = 12; //battery_level_in_percent(batt_lvl_in_milli_volts);
 
         err_code = ble_bas_battery_level_update(&bas, percentage_batt_lvl);
         if (
@@ -80,7 +80,7 @@ void ADC_IRQHandler(void)
             (err_code != BLE_ERROR_GATTS_SYS_ATTR_MISSING)
         )
         {
-            APP_ERROR_HANDLER(err_code);
+            //APP_ERROR_HANDLER(err_code);
         }
     }
 }
@@ -102,13 +102,13 @@ void battery_start(void)
 
     // Enable ADC interrupt
     err_code = sd_nvic_ClearPendingIRQ(ADC_IRQn);
-    APP_ERROR_CHECK(err_code);
+    //APP_ERROR_CHECK(err_code);
 
     err_code = sd_nvic_SetPriority(ADC_IRQn, NRF_APP_PRIORITY_LOW);
-    APP_ERROR_CHECK(err_code);
+    //APP_ERROR_CHECK(err_code);
 
     err_code = sd_nvic_EnableIRQ(ADC_IRQn);
-    APP_ERROR_CHECK(err_code);
+    //APP_ERROR_CHECK(err_code);
 
     NRF_ADC->EVENTS_END  = 0;    // Stop any running conversions.
     NRF_ADC->TASKS_START = 1;

@@ -32,7 +32,7 @@
 #include "led.h"
 #include "app_util.h"
 
-#define ADVERTISING_LED_PIN_NO               28 //28 //28 fuer nRFduino                                     /**< Is on when device is advertising. */
+#define ADVERTISING_LED_PIN_NO               12 //28 fuer nRFduino                                     /**< Is on when device is advertising. */
 
 #define PPI_CHAN0_TO_TOGGLE_LED              0                                         /**< The PPI Channel that connects CC0 compare event to the GPIOTE Task that toggles the Advertising LED. */
 #define GPIOTE_CHAN_FOR_LED_TASK             3                                         /**< The GPIOTE Channel used to perform write operation on the Advertising LED pin. */

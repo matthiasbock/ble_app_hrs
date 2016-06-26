@@ -138,8 +138,13 @@ void app_error_handler(uint32_t error_code, uint32_t line_num, const uint8_t * p
     //                Use with care. Un-comment the line below to use.
     // ble_debug_assert_handler(error_code, line_num, p_file_name);
 
-    printf("System error %x in file %d, line %d\n", (int) error_code, (int) *p_file_name, (int) line_num);
-
+    printf("System error 0x%08x in file %d, line %d\n", (int) error_code, (int) *p_file_name, (int) line_num);
+/*
+    NRF_ERROR_BASE_NUM
+    NRF_ERROR_SDM_BASE_NUM
+    NRF_ERROR_SOC_BASE_NUM
+    NRF_ERROR_STK_BASE_NUM
+*/
     //nrf_delay_ms(2);
     // On assert, the system can only recover with a reset.
     printf("NVIC_SystemReset();\n");
@@ -587,7 +592,7 @@ static void advertising_start(void)
 {
     uint32_t err_code;
 
-    printf("Start advertising ...\n");
+    //printf("Start advertising ...\n");
 
     err_code = sd_ble_gap_adv_start(&m_adv_params);
     APP_ERROR_CHECK(err_code);
@@ -651,7 +656,7 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             break;
 
         case BLE_GAP_EVT_DISCONNECTED:            
-            printf("disconnected\n");
+            //printf("disconnected\n");
             // @note Flash access may not be complete on return of this API. System attributes are now
             // stored to flash when they are updated to ensure flash access on disconnect does not
             // result in system powering off before data was successfully written.
@@ -681,7 +686,7 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
 
                 system_off_mode_enter();
             }
-            printf("GAP timeout\n");
+            //printf("GAP timeout\n");
             break;
 
         default:
@@ -714,13 +719,9 @@ static void on_sys_evt(uint32_t sys_evt)
     }
 }
 
-void blink()
+void toggle()
 {
-    //nrf_gpio_pin_toggle(NRFDUINO_LED_PIN);
-    nrf_gpio_pin_set(NRFDUINO_LED_PIN);
-    nrf_delay_ms(20);
-    nrf_gpio_pin_clear(NRFDUINO_LED_PIN);
-    nrf_delay_ms(50);
+    nrf_gpio_pin_toggle(NRFDUINO_LED_PIN);
 }
 
 /**@brief Function for dispatching a BLE stack event to all modules with a BLE stack event handler.
@@ -744,37 +745,22 @@ static void ble_evt_dispatch(ble_evt_t * p_ble_evt)
 
         case 0x12:
             // Connection Parameters Update
-            blink();
             break;
 
         case 0x13:
             // Security Parameters Request
-            blink();
-            blink();
             break;
 
         case 0x14:
             // Security Info Request
-            blink();
-            blink();
-            blink();
             break;
 
         case 0x17:
             // Authentication Status event
-            blink();
-            blink();
-            blink();
-            blink();
             break;
 
         case 0x18:
             // Connection Security Update
-            blink();
-            blink();
-            blink();
-            blink();
-            blink();
             break;
 
         case 0x19:
@@ -784,6 +770,7 @@ static void ble_evt_dispatch(ble_evt_t * p_ble_evt)
 
         case 0x50:
             // Write
+            toggle();
             break;
 
         default:
@@ -823,12 +810,6 @@ int main(void)
     printf("Hello Toggler!\n");
 
     nrf_gpio_pin_dir_set(NRFDUINO_LED_PIN, NRF_GPIO_PORT_DIR_OUTPUT);
-    nrf_gpio_pin_toggle(NRFDUINO_LED_PIN);
-    nrf_delay_ms(1000);
-    nrf_gpio_pin_toggle(NRFDUINO_LED_PIN);
-    nrf_delay_ms(1000);
-
-    blink();
 
     uint32_t err_code;
 
