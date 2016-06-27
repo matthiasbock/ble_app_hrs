@@ -360,6 +360,11 @@ static void advertising_init(void)
     m_adv_params.fp          = BLE_GAP_ADV_FP_ANY;
     m_adv_params.interval    = APP_ADV_INTERVAL;
     m_adv_params.timeout     = APP_ADV_TIMEOUT_IN_SECONDS;
+
+    // zufaellige MAC-Adresse auswaehlen
+    ble_gap_addr_t gap_address;
+    gap_address.addr_type = BLE_GAP_ADDR_TYPE_RANDOM_PRIVATE_NON_RESOLVABLE;
+    sd_ble_gap_address_set(BLE_GAP_ADDR_CYCLE_MODE_AUTO, &gap_address);
 }
 
 void my_hrs_handler(ble_hrs_t * p_hrs, ble_hrs_evt_t * p_evt)
