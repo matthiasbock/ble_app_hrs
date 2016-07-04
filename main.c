@@ -607,11 +607,11 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
 {
 //    uint32_t        err_code;
 
-    uart_putstring("E!\n");
-
     switch (p_ble_evt->header.evt_id)
     {
         case BLE_GAP_EVT_CONNECTED:
+            uart_putstring("c");
+
             led_stop();
             
             // Initialize the current heart rate to the average of max and min values. So that
@@ -627,6 +627,8 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             break;
 
         case BLE_GAP_EVT_DISCONNECTED:            
+            uart_putstring("d");
+
             // @note Flash access may not be complete on return of this API. System attributes are now
             // stored to flash when they are updated to ensure flash access on disconnect does not
             // result in system powering off before data was successfully written.
@@ -642,6 +644,8 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             break;
 
         case BLE_GAP_EVT_TIMEOUT:
+            uart_putstring("t");
+
             advertising_start();
 /*
             if (p_ble_evt->evt.gap_evt.params.timeout.src == BLE_GAP_TIMEOUT_SRC_ADVERTISEMENT)
@@ -662,7 +666,8 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             break;
 
         default:
-            // No implementation needed.
+            uart_putstring("u");
+            // No implementation
             break;
     }
 }
@@ -752,7 +757,7 @@ int main(void)
     // Start advertising.
     advertising_start();
 
-    uart_putstring("Hallo Welt!\n");
+    uart_putstring("H");
 
     // Enter main loop.
     for (;;)

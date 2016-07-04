@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "app_uart.h"
+#include "nrf_delay.h"
 #include "uart_conf.h"
 
 void uart_init();

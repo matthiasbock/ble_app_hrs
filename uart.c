@@ -47,6 +47,8 @@ void uart_init()
                         err_code);
 
     APP_ERROR_CHECK(err_code);
+
+    app_uart_flush();
 }
 
 
@@ -55,11 +57,16 @@ void uart_init()
  */
 void uart_putstring(char* str)
 {
-//    uint32_t err_code = 0;
+    uint32_t err_code = 0;
 
     uint8_t len = strlen((char *) str);
     for (uint8_t i = 0; i < len; i++)
     {
-        while (app_uart_put(str[i]) != NRF_SUCCESS);
+        //nrf_delay_us(100);
+        err_code = app_uart_put(str[i]);
+        if (err_code != NRF_SUCCESS)
+        {
+            //printf("UART error at char %d: %d\n", i+1, err_code);
+        }
     }
 }

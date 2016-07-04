@@ -29,9 +29,9 @@
 #define UART_IRQ_PRIORITY APP_IRQ_PRIORITY_LOW
 
 /**< Size of desired RX buffer, must be a power of 2 or ZERO (No FIFO). */
-#define RX_BUF_SIZE 32
+#define RX_BUF_SIZE 128
 /**< Size of desired TX buffer, must be a power of 2 or ZERO (No FIFO) */
-#define TX_BUF_SIZE 32
+#define TX_BUF_SIZE 128
 
 /**
  *@brief UART configuration structure
@@ -46,7 +46,7 @@ static const app_uart_comm_params_t comm_params =
     //Below values are defined in ser_config.h common for application and connectivity
     .flow_control = APP_UART_FLOW_CONTROL_DISABLED,
     .use_parity   = false,
-    .baud_rate    = UART_BAUDRATE_BAUDRATE_Baud9600
+    .baud_rate    = UART_BAUDRATE_BAUDRATE_Baud115200
 };
 
 /** @} */
