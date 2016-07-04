@@ -105,7 +105,7 @@ static ble_hrs_t                             m_hrs;                             
 static volatile uint16_t                     m_cur_heart_rate;                          /**< Current heart rate value. */
                                                                                        
 static app_timer_id_t                        m_battery_timer_id;                        /**< Battery timer. */
-static app_timer_id_t                        m_heart_rate_timer_id;                     /**< Heart rate measurement timer. */
+//static app_timer_id_t                        m_heart_rate_timer_id;                     /**< Heart rate measurement timer. */
 static bool                                  m_memory_access_in_progress = false;       /**< Flag to keep track of ongoing operations on persistent memory. */
 static dm_application_instance_t             m_app_handle;                              /**< Application identifier allocated by device manager */
 static void ble_evt_dispatch(ble_evt_t * p_ble_evt);
@@ -193,37 +193,6 @@ static void battery_level_meas_timeout_handler(void * p_context)
 }
 
 
-/**@brief Function for handling the Heart rate measurement timer timeout.
- *
- * @details This function will be called each time the heart rate measurement timer expires.
- *          It will exclude RR Interval data from every third measurement.
- *
- * @param[in]   p_context   Pointer used for passing some arbitrary information (context) from the
- *                          app_start_timer() call to the timeout handler.
- */
-static void heart_rate_meas_timeout_handler(void * p_context)
-{
-    uint32_t err_code;
-
-    UNUSED_PARAMETER(p_context);
-
-    err_code = ble_hrs_heart_rate_measurement_send(&m_hrs, m_cur_heart_rate);
-
-    if (
-        (err_code != NRF_SUCCESS)
-        &&
-        (err_code != NRF_ERROR_INVALID_STATE)
-        &&
-        (err_code != BLE_ERROR_NO_TX_BUFFERS)
-        &&
-        (err_code != BLE_ERROR_GATTS_SYS_ATTR_MISSING)
-    )
-    {
-        APP_ERROR_HANDLER(err_code);
-    }
-}
-
-
 /**@brief Function for handling button events.
  *
  * @param[in]   pin_no   The pin number of the button pressed.
@@ -281,10 +250,12 @@ static void timers_init(void)
                                 battery_level_meas_timeout_handler);
     APP_ERROR_CHECK(err_code);
 
+    /*
     err_code = app_timer_create(&m_heart_rate_timer_id,
                                 APP_TIMER_MODE_REPEATED,
                                 heart_rate_meas_timeout_handler);
     APP_ERROR_CHECK(err_code);
+    */
 }
 
 
@@ -576,8 +547,10 @@ static void application_timers_start(void)
     err_code = app_timer_start(m_battery_timer_id, BATTERY_LEVEL_MEAS_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
 
-    //err_code = app_timer_start(m_heart_rate_timer_id, HEART_RATE_MEAS_INTERVAL, NULL);
-    //APP_ERROR_CHECK(err_code);
+    /*
+    err_code = app_timer_start(m_heart_rate_timer_id, HEART_RATE_MEAS_INTERVAL, NULL);
+    APP_ERROR_CHECK(err_code);
+    */
 }
 
 
@@ -755,10 +728,10 @@ int main(void)
 
     uint32_t err_code;
 
-    //timers_init();
+    timers_init();
     gpiote_init();
     buttons_init();
-    //uart_init();
+    uart_init();
 
     ble_stack_init();
     device_manager_init();
