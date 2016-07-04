@@ -55,15 +55,11 @@ void uart_init()
  */
 void uart_putstring(char* str)
 {
-    printf("a");
-    return;
-    uint32_t err_code = 0;
+//    uint32_t err_code = 0;
 
     uint8_t len = strlen((char *) str);
     for (uint8_t i = 0; i < len; i++)
     {
-        printf(str[i]);
-        //err_code = app_uart_put(str[i]);
-        APP_ERROR_CHECK(err_code);
+        while (app_uart_put(str[i]) != NRF_SUCCESS);
     }
 }

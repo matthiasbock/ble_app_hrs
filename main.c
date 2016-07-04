@@ -52,7 +52,12 @@
 
 #define NRFDUINO_LED_PIN                     28
 
-#define IS_SRVC_CHANGED_CHARACT_PRESENT      0                                          /**< Include or not the service_changed characteristic. if not enabled, the server's database cannot be changed for the lifetime of the device*/
+/**
+ * Include or not the service_changed characteristic.
+ * if not enabled, the server's database cannot be changed for the lifetime
+ * of the device
+ */
+#define IS_SRVC_CHANGED_CHARACT_PRESENT      1
                                                                              
 #define HR_INC_BUTTON_PIN_NO                 BUTTON_0                                   /**< Button used to increment heart rate. */
 #define HR_DEC_BUTTON_PIN_NO                 BUTTON_1                                   /**< Button used to decrement heart rate. */
@@ -602,6 +607,8 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
 {
 //    uint32_t        err_code;
 
+    uart_putstring("E!\n");
+
     switch (p_ble_evt->header.evt_id)
     {
         case BLE_GAP_EVT_CONNECTED:
@@ -745,7 +752,7 @@ int main(void)
     // Start advertising.
     advertising_start();
 
-    //uart_putstring("Hallo Welt!\n");
+    uart_putstring("Hallo Welt!\n");
 
     // Enter main loop.
     for (;;)
