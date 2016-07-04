@@ -48,6 +48,7 @@
 #include "pstorage.h"
 #include "app_trace.h"
 
+#include "uart.h"
 
 #define NRFDUINO_LED_PIN                     28
 
@@ -59,7 +60,7 @@
 
 #define DEVICE_NAME                          "nRFduino"                               /**< Name of device. Will be included in the advertising data. */
 #define MANUFACTURER_NAME                    "Interoberlin"                      /**< Manufacturer. Will be passed to Device Information Service. */
-#define APP_ADV_INTERVAL                     40                                         /**< The advertising interval (in units of 0.625 ms. This value corresponds to 25 ms). */
+#define APP_ADV_INTERVAL                     1600                                        /**< The advertising interval (in units of 0.625 ms. This value corresponds to 25 ms). */
 #define APP_ADV_TIMEOUT_IN_SECONDS           360                                        /**< The advertising timeout in units of seconds. */
 
 #define APP_TIMER_PRESCALER                  0                                          /**< Value of the RTC1 PRESCALER register. */
@@ -137,7 +138,7 @@ void app_error_handler(uint32_t error_code, uint32_t line_num, const uint8_t * p
     //                Use with care. Un-comment the line below to use.
     // ble_debug_assert_handler(error_code, line_num, p_file_name);
 
-    printf("System error 0x%8x\n", (unsigned int) error_code);
+    printf("System error 0x%08x\n", (unsigned int) error_code);
 
     // On assert, the system can only recover with a reset.
     NVIC_SystemReset();
@@ -626,7 +627,7 @@ static void system_off_mode_enter(void)
  */
 static void on_ble_evt(ble_evt_t * p_ble_evt)
 {
-    uint32_t        err_code;
+//    uint32_t        err_code;
 
     switch (p_ble_evt->header.evt_id)
     {
@@ -754,9 +755,11 @@ int main(void)
 
     uint32_t err_code;
 
-    timers_init();
+    //timers_init();
     gpiote_init();
     buttons_init();
+    //uart_init();
+
     ble_stack_init();
     device_manager_init();
 
@@ -768,6 +771,8 @@ int main(void)
 
     // Start advertising.
     advertising_start();
+
+    //uart_putstring("Hallo Welt!\n");
 
     // Enter main loop.
     for (;;)

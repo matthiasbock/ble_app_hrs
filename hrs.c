@@ -226,7 +226,7 @@ static uint32_t heart_rate_measurement_char_add(ble_hrs_t            * p_hrs,
     char_md.p_cccd_md         = &cccd_md;
     char_md.p_sccd_md         = NULL;
 
-    BLE_UUID_BLE_ASSIGN(ble_uuid, 0x2013);//BLE_UUID_HEART_RATE_MEASUREMENT_CHAR);
+    BLE_UUID_BLE_ASSIGN(ble_uuid, BLE_UUID_HEART_RATE_MEASUREMENT_CHAR);
 
     memset(&attr_md, 0, sizeof(attr_md));
 
@@ -269,14 +269,14 @@ static uint32_t body_sensor_location_char_add(ble_hrs_t * p_hrs, const ble_hrs_i
 
     memset(&char_md, 0, sizeof(char_md));
 
-    char_md.char_props.read  = 1;
+    char_md.char_props.write = 1;
     char_md.p_char_user_desc = NULL;
     char_md.p_char_pf        = NULL;
     char_md.p_user_desc_md   = NULL;
     char_md.p_cccd_md        = NULL;
     char_md.p_sccd_md        = NULL;
 
-    BLE_UUID_BLE_ASSIGN(ble_uuid, BLE_UUID_BODY_SENSOR_LOCATION_CHAR);
+    BLE_UUID_BLE_ASSIGN(ble_uuid, 0x2013); //BLE_UUID_BODY_SENSOR_LOCATION_CHAR);
 
     memset(&attr_md, 0, sizeof(attr_md));
 
@@ -334,14 +334,11 @@ uint32_t ble_hrs_init(ble_hrs_t * p_hrs, const ble_hrs_init_t * p_hrs_init)
         return err_code;
     }
 
-    if (p_hrs_init->p_body_sensor_location != NULL)
+    // Add body sensor location characteristic
+    err_code = body_sensor_location_char_add(p_hrs, p_hrs_init);
+    if (err_code != NRF_SUCCESS)
     {
-        // Add body sensor location characteristic
-        err_code = body_sensor_location_char_add(p_hrs, p_hrs_init);
-        if (err_code != NRF_SUCCESS)
-        {
-            return err_code;
-        }
+        return err_code;
     }
 
     return NRF_SUCCESS;

@@ -9,6 +9,7 @@ C_SOURCE_FILES += led.c
 C_SOURCE_FILES += ble_dis.c
 C_SOURCE_FILES += ble_bas.c
 C_SOURCE_FILES += hrs.c
+C_SOURCE_FILES += uart.c
 
 C_SOURCE_FILES += ble_srv_common.c
 C_SOURCE_FILES += ble_sensorsim.c
@@ -25,6 +26,7 @@ C_SOURCE_FILES += app_trace.c
 C_SOURCE_FILES += simple_uart.c
 C_SOURCE_FILES += app_gpiote.c
 C_SOURCE_FILES += app_button.c
+C_SOURCE_FILES += app_uart.c
 
 SDK_PATH = ../../../../
 
