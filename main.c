@@ -83,14 +83,22 @@
 
 #define BUTTON_DETECTION_DELAY               APP_TIMER_TICKS(50, APP_TIMER_PRESCALER)   /**< Delay from a GPIOTE event until a button is reported as pushed (in number of timer ticks). */
 
-#define MIN_CONN_INTERVAL                    MSEC_TO_UNITS(500, UNIT_1_25_MS)           /**< Minimum acceptable connection interval (0.5 seconds). */
-#define MAX_CONN_INTERVAL                    MSEC_TO_UNITS(1000, UNIT_1_25_MS)          /**< Maximum acceptable connection interval (1 second). */
-#define SLAVE_LATENCY                        0                                          /**< Slave latency. */
-#define CONN_SUP_TIMEOUT                     MSEC_TO_UNITS(4000, UNIT_10_MS)            /**< Connection supervisory timeout (4 seconds). */
+//#define MIN_CONN_INTERVAL                    MSEC_TO_UNITS(500, UNIT_1_25_MS)           /**< Minimum acceptable connection interval (0.5 seconds). */
+//#define MAX_CONN_INTERVAL                    MSEC_TO_UNITS(1000, UNIT_1_25_MS)          /**< Maximum acceptable connection interval (1 second). */
+//#define SLAVE_LATENCY                        0                                          /**< Slave latency. */
+//#define CONN_SUP_TIMEOUT                     MSEC_TO_UNITS(4000, UNIT_10_MS)            /**< Connection supervisory timeout (4 seconds). */
 
-#define FIRST_CONN_PARAMS_UPDATE_DELAY       APP_TIMER_TICKS(5000, APP_TIMER_PRESCALER) /**< Time from initiating event (connect or start of notification) to first time sd_ble_gap_conn_param_update is called (5 seconds). */
-#define NEXT_CONN_PARAMS_UPDATE_DELAY        APP_TIMER_TICKS(30000, APP_TIMER_PRESCALER)/**< Time between each call to sd_ble_gap_conn_param_update after the first call (30 seconds). */
-#define MAX_CONN_PARAMS_UPDATE_COUNT         3                                          /**< Number of attempts before giving up the connection parameter negotiation. */
+//#define FIRST_CONN_PARAMS_UPDATE_DELAY       APP_TIMER_TICKS(5000, APP_TIMER_PRESCALER) /**< Time from initiating event (connect or start of notification) to first time sd_ble_gap_conn_param_update is called (5 seconds). */
+//#define NEXT_CONN_PARAMS_UPDATE_DELAY        APP_TIMER_TICKS(30000, APP_TIMER_PRESCALER)/**< Time between each call to sd_ble_gap_conn_param_update after the first call (30 seconds). */
+//#define MAX_CONN_PARAMS_UPDATE_COUNT         3                                          /**< Number of attempts before giving up the connection parameter negotiation. */
+#define MIN_CONN_INTERVAL               7.5                                          /**< Minimum acceptable connection interval (20 ms), Connection interval uses 1.25 ms units. */
+#define MAX_CONN_INTERVAL               60                                          /**< Maximum acceptable connection interval (75 ms), Connection interval uses 1.25 ms units. */
+#define SLAVE_LATENCY                   0                                           /**< slave latency. */
+#define CONN_SUP_TIMEOUT                400                                         /**< Connection supervisory timeout (4 seconds), Supervision Timeout uses 10 ms units. */
+#define FIRST_CONN_PARAMS_UPDATE_DELAY  APP_TIMER_TICKS(5000, APP_TIMER_PRESCALER)  /**< Time from initiating event (connect or start of notification) to first time sd_ble_gap_conn_param_update is called (5 seconds). */
+#define NEXT_CONN_PARAMS_UPDATE_DELAY   APP_TIMER_TICKS(30000, APP_TIMER_PRESCALER) /**< Time between each call to sd_ble_gap_conn_param_update after the first call (30 seconds). */
+#define MAX_CONN_PARAMS_UPDATE_COUNT    3                                           /**< Number of attempts before giving up the connection parameter negotiation. */
+
 
 #define SEC_PARAM_TIMEOUT                    30                                         /**< Timeout for Pairing Request or Security Request (in seconds). */
 #define SEC_PARAM_BOND                       1                                          /**< Perform bonding. */
@@ -269,7 +277,12 @@ static void timers_init(void)
  * @details This function sets up all the necessary GAP (Generic Access Profile) parameters of the
  *          device including the device name, appearance, and the preferred connection parameters.
  */
-static void gap_params_init(void)
+static void gap_params_init(
+        uint16_t min_connection_interval,
+        uint16_t max_connection_interval,
+        uint16_t slave_latency,
+        uint16_t connection_supervision_timeout
+    )
 {
     uint32_t                err_code;
     ble_gap_conn_params_t   gap_conn_params;
@@ -287,13 +300,23 @@ static void gap_params_init(void)
 
     memset(&gap_conn_params, 0, sizeof(gap_conn_params));
 
-    gap_conn_params.min_conn_interval = MIN_CONN_INTERVAL;
-    gap_conn_params.max_conn_interval = MAX_CONN_INTERVAL;
-    gap_conn_params.slave_latency     = SLAVE_LATENCY;
-    gap_conn_params.conn_sup_timeout  = CONN_SUP_TIMEOUT;
+    gap_conn_params.min_conn_interval = min_connection_interval;
+    gap_conn_params.max_conn_interval = max_connection_interval;
+    gap_conn_params.slave_latency     = slave_latency;
+    gap_conn_params.conn_sup_timeout  = connection_supervision_timeout;
 
     err_code = sd_ble_gap_ppcp_set(&gap_conn_params);
     APP_ERROR_CHECK(err_code);
+}
+
+void gap_params_init_defaults()
+{
+    gap_params_init(
+            MIN_CONN_INTERVAL,
+            MAX_CONN_INTERVAL,
+            SLAVE_LATENCY,
+            CONN_SUP_TIMEOUT
+            );
 }
 
 
@@ -606,11 +629,16 @@ static void system_off_mode_enter(void)
 static void on_ble_evt(ble_evt_t * p_ble_evt)
 {
 //    uint32_t        err_code;
+    uint16_t min_connection_interval;
+    uint16_t max_connection_interval;
+    uint16_t slave_latency;
+    uint16_t connection_supervision_timeout;
+    ble_gap_conn_params_t* connection_parameters;
 
     switch (p_ble_evt->header.evt_id)
     {
         case BLE_GAP_EVT_CONNECTED:
-            uart_putstring("c");
+            app_uart_put('c');
 
             led_stop();
             
@@ -627,7 +655,7 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             break;
 
         case BLE_GAP_EVT_DISCONNECTED:            
-            uart_putstring("d");
+            app_uart_put('d');
 
             // @note Flash access may not be complete on return of this API. System attributes are now
             // stored to flash when they are updated to ensure flash access on disconnect does not
@@ -641,6 +669,46 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             // Der Reset ist erforderlich, da die Barke sonst nach einer Verbindung unereichbar bleibt.
             // Da scheint es irgendwie eine Unzulaenglichkeit zu geben bei der Rueckkehr zum Advertising-Modus...
             //NVIC_SystemReset();
+            break;
+
+        case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
+            app_uart_put('s');
+            break;
+
+        case BLE_GAP_EVT_SEC_INFO_REQUEST:
+            app_uart_put('S');
+            break;
+
+        case BLE_GAP_EVT_CONN_PARAM_UPDATE:
+            app_uart_put('p');
+
+            /*
+            connection_parameters = &(p_ble_evt->evt.gap_evt.params.conn_param_update.conn_params);
+            gap_params_init(min_connection_interval, max_connection_interval, slave_latency, connection_supervision_timeout);
+
+            app_uart_put('0'+connection_parameters->max_conn_interval);
+
+            min_connection_interval = connection_parameters->min_conn_interval;
+            max_connection_interval = connection_parameters->max_conn_interval;
+            slave_latency = connection_parameters->slave_latency;
+            connection_supervision_timeout = connection_parameters->conn_sup_timeout;
+            */
+            break;
+
+        case BLE_GAP_EVT_CONN_SEC_UPDATE:
+            app_uart_put('q');
+            break;
+
+        case BLE_GAP_EVT_AUTH_KEY_REQUEST:
+            app_uart_put('a');
+            break;
+
+        case BLE_GAP_EVT_AUTH_STATUS:
+            app_uart_put('A');
+            break;
+
+        case BLE_GAP_EVT_PASSKEY_DISPLAY:
+            app_uart_put('P');
             break;
 
         case BLE_GAP_EVT_TIMEOUT:
@@ -666,7 +734,7 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             break;
 
         default:
-            uart_putstring("u");
+            app_uart_put('u');
             // No implementation
             break;
     }
@@ -744,12 +812,14 @@ int main(void)
     gpiote_init();
     buttons_init();
     uart_init();
+    app_uart_put('\n');
+    app_uart_put('\r');
 
     ble_stack_init();
     device_manager_init();
 
     // Initialize Bluetooth Stack parameters.
-    gap_params_init();
+    gap_params_init_defaults();
     advertising_init();
     services_init();
     conn_params_init();
